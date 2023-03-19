@@ -5,13 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.stream.Collectors;
 
 public class LargestNumber {
     // For fast input output
@@ -89,43 +84,28 @@ public class LargestNumber {
     }
 
     private static String largestNumberString(String numberString, int k) {
-        List<Integer> digitList = Arrays.asList(numberString.split("")).stream().map((num) -> Integer.parseInt(num))
-                .collect(Collectors.toList());
-        List<Pair<Integer, Integer>> digitWithIndex = new ArrayList<>();
-        for (int i = 0; i < digitList.size(); i++) {
-            digitWithIndex.add(new Pair<Integer, Integer>(digitList.get(i), i));
-        }
-
-        Collections.sort(digitWithIndex, new Comparator<Pair<Integer, Integer>>() {
-            @Override
-            public int compare(Pair<Integer, Integer> p1, Pair<Integer, Integer> p2) {
-                if (p1.first < p2.first || (p1.first == p2.first && p1.second < p2.second)) {
-                    return -1;
-                }
-                if (p1.first == p2.first && p1.second == p2.second) {
-                    return 0;
-                }
-                return 1;
+        Stack<Integer> stack = new Stack<>();
+        int removed = 0;
+        for (Character c : numberString.toCharArray()) {
+            Integer digit = Character.getNumericValue(c);
+            // System.out.println(digit);
+            while (!stack.empty() && stack.peek() < digit && removed < k) {
+                stack.pop();
+                // System.out.print(" popping");
+                removed++;
             }
-        });
-        for (int i = 0; i < k; i++) {
-            Pair<Integer, Integer> p = digitWithIndex.get(i);
-            p.first = -1;
+            stack.push(digit);
         }
-        List<Integer> finalList = new ArrayList<>(digitWithIndex.size());
+        while (removed < k) {
+            stack.pop();
+            removed++;
 
-        for (int i = 0; i < digitWithIndex.size(); i++) {
-            finalList.add(0);
         }
-
-        for (int i = 0; i < digitWithIndex.size(); i++) {
-            finalList.set(digitWithIndex.get(i).second, digitWithIndex.get(i).first);
-        }
-
         StringBuilder sb = new StringBuilder();
-
-        finalList.stream().filter((num) -> num != -1).forEach(sb::append);
-
+        while (!stack.empty()) {
+            sb.append(stack.pop());
+        }
+        sb.reverse();
         return sb.toString();
     }
 }
